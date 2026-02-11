@@ -1,0 +1,115 @@
+/* =========================================
+   1. VARIÁVEIS DE AMBIENTE E TEMAS
+   ========================================= */
+:root {
+    --bg-body: #f4f6f8; --bg-surface: #ffffff; --text-main: #212529;
+    --header-bg: #dbeedd; --header-text: #1a5c20; 
+    --subtable-header-bg: #e9ecef; --subtable-header-text: #495057;
+    --border-color: #c5ccd3; --toolbar-bg: #198754; --toolbar-text: #ffffff; 
+    --accent-color: #198754; --accent-rgb: 25, 135, 84; 
+    --row-hover: #f1f8f3; --subtable-bg: #fdfdfd;
+    --input-bg: #fff; --input-text: #000;
+}
+[data-theme="light"] { --bg-body: #f8f9fa; --toolbar-bg: #fff; --toolbar-text: #212529; --accent-color: #0d6efd; --accent-rgb: 13, 110, 253; --header-bg: #dee2e6; --header-text: #212529; --subtable-header-bg: #e2e3e5; --subtable-header-text: #495057; }
+[data-theme="dark"] { --bg-body: #121212; --bg-surface: #1e1e1e; --text-main: #e0e0e0; --header-bg: #2c2c2c; --header-text: #ffffff; --subtable-header-bg: #252525; --subtable-header-text: #cccccc; --border-color: #444; --toolbar-bg: #000; --toolbar-text: #e0e0e0; --accent-color: #bb86fc; --accent-rgb: 187, 134, 252; --row-hover: #2a2a2a; --subtable-bg: #121212; --input-bg: #2d2d2d; --input-text: #fff; }
+
+/* 2. ESTRUTURA BASE */
+body, html { height: 100%; margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 0.8rem; background-color: var(--bg-body) !important; color: var(--text-main); }
+.nav-tabs .nav-link { color: var(--text-main); }
+.nav-tabs .nav-link.active { background-color: var(--bg-surface); color: var(--accent-color); border-color: var(--border-color) var(--border-color) var(--bg-surface); }
+.tab-content { background-color: var(--bg-body); height: 100%; }
+.bg-light { background-color: var(--bg-body) !important; }
+
+/* 3. TOOLBAR */
+.toolbar { height: 50px; padding: 0 15px; display: flex; align-items: center; background: var(--toolbar-bg); color: var(--toolbar-text); border-bottom: 1px solid var(--border-color); }
+.btn-tool { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: inherit; padding: 4px 10px; border-radius: 3px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+.btn-tool:hover { background: rgba(255,255,255,0.3); }
+[data-theme="light"] .btn-tool { background: #f8f9fa; border-color: #ced4da; }
+.tool-select { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 3px; padding: 3px; font-size: 0.8rem; }
+
+/* 4. GRID */
+.spreadsheet-container { height: calc(100vh - 50px); overflow: auto; background: var(--bg-surface); }
+.table-excel { border-collapse: separate; border-spacing: 0; min-width: 2600px; table-layout: fixed; }
+.table-excel > thead > tr > th { background: var(--header-bg) !important; color: var(--header-text) !important; border: 1px solid var(--border-color); border-bottom: 2px solid var(--border-color); padding: 8px 6px; text-align: center; position: sticky; top: 0; z-index: 100; }
+.table-excel td { border: 1px solid var(--border-color); padding: 5px; vertical-align: middle; background: var(--bg-surface); color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.table-excel > tbody > tr:not(.child-row-container):hover > td { background-color: var(--row-hover); }
+.child-row-container > td { padding: 15px 15px 15px 50px; border-bottom: 2px solid var(--border-color); background-color: var(--subtable-bg) !important; }
+.sub-table { width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; }
+.sub-table thead th { background: var(--subtable-header-bg) !important; color: var(--subtable-header-text) !important; padding: 6px; border-bottom: 2px solid var(--border-color); text-align: center; }
+.sub-table td { padding: 4px 8px; border-bottom: 1px solid var(--border-color); background-color: var(--bg-surface) !important; }
+
+/* 5. KANBAN */
+#tab-kanban { overflow-x: auto; overflow-y: hidden; height: 100%; display: flex; align-items: flex-start; background: var(--bg-body); }
+.kanban-board { display: flex; flex-direction: row; height: 100%; padding: 15px; gap: 15px; align-items: flex-start; }
+.kanban-column { flex: 0 0 300px; max-width: 300px; height: 100%; max-height: calc(100vh - 130px); background: var(--subtable-bg); border-radius: 8px; display: flex; flex-direction: column; border: 1px solid var(--border-color); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.kanban-header { padding: 10px 12px; font-weight: 700; font-size: 0.9rem; border-bottom: 2px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--header-bg); color: var(--header-text); border-radius: 8px 8px 0 0; flex-shrink: 0; }
+.kanban-body { padding: 10px; overflow-y: auto; overflow-x: hidden; flex-grow: 1; min-height: 50px; scrollbar-width: thin; }
+.kanban-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; margin-bottom: 10px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border-left: 4px solid transparent; position: relative; }
+.kanban-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); z-index: 10; border-color: var(--accent-color); }
+.card-prio-Alta { border-left-color: #dc3545; } .card-prio-Média { border-left-color: #ffc107; } .card-prio-Baixa { border-left-color: #198754; }
+.card-id { font-size: 0.7rem; color: #888; font-weight: 800; }
+.card-title { font-weight: 600; font-size: 0.85rem; margin: 6px 0; line-height: 1.3; color: var(--text-main); }
+.card-footer-info { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 0.7rem; color: #666; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 6px; }
+.tag-pill { display: inline-flex; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; color: #fff; margin-right: 4px; }
+.sla-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-flex; gap: 4px; }
+.sla-ok { background-color: #d1e7dd; color: #0f5132; } .sla-warn { background-color: #fff3cd; color: #664d03; } .sla-danger { background-color: #f8d7da; color: #842029; }
+.wip-badge { font-size: 0.7rem; padding: 2px 8px; background: rgba(0,0,0,0.1); border-radius: 12px; }
+.wip-limit-exceeded { background-color: #dc3545 !important; color: white !important; animation: pulse 2s infinite; }
+
+/* 6. DARK MODE FIXES */
+[data-theme="dark"] .modal-content { background: #1e1e1e; color: #e0e0e0; border: 1px solid #444; }
+[data-theme="dark"] .modal-header, [data-theme="dark"] .modal-footer { border-color: #333; }
+[data-theme="dark"] .form-control, [data-theme="dark"] .form-select { background-color: #2d2d2d; border-color: #444; color: #fff; }
+[data-theme="dark"] .form-control:focus { background-color: #333; border-color: var(--accent-color); color: #fff; }
+[data-theme="dark"] .list-group-item { background: #2d2d2d; color: #fff; border-color: #444; }
+[data-theme="dark"] .color-dot { border-color: #333; }
+[data-theme="dark"] .card { background-color: #2d2d2d !important; border-color: #444 !important; color: #e0e0e0 !important; }
+[data-theme="dark"] .floating-editor { background: #2d2d2d; border-color: #444; color: #e0e0e0; }
+[data-theme="dark"] .nav-tabs { border-bottom-color: #444; background: #121212 !important; }
+[data-theme="dark"] .bg-light { background-color: #2a2a2a !important; color: #ccc !important; }
+
+/* --- CORREÇÃO DEFINITIVA DO DASHBOARD --- */
+#dashboard-container {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    min-height: 100px;
+    height: auto !important;
+    opacity: 1 !important;
+    padding: 15px;
+    overflow-y: auto;
+}
+.dashboard-controls-card {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    opacity: 1 !important;
+    margin-bottom: 20px !important;
+    z-index: 99;
+    position: relative;
+    background-color: #0d6efd !important; /* Azul Bootstrap Forçado */
+    color: #fff !important;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.dashboard-controls-card label { 
+    color: #fff !important; 
+    font-weight: 600;
+}
+.dashboard-controls-card h5 {
+    color: #fff !important;
+}
+.dashboard-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 15px !important;
+    width: 100% !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+.dashboard-widget { min-height: 350px; cursor: grab; transition: transform 0.2s; }
+.dashboard-widget:active { cursor: grabbing; }
+.dashboard-widget .card { border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-surface); }
+/* Importante para ApexCharts: */
+.apexcharts-canvas { margin: 0 auto; }
+[data-theme="dark"] .dashboard-widget .card-header { background-color: #333 !important; border-bottom-color: #444; color: #e0e0e0; }
