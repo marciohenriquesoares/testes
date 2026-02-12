@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle Financeiro</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/bootstrap-icons.css" rel="stylesheet">
+    <title>Controle Financeiro - Grid</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" onerror="this.onerror=null;this.href='css/bootstrap.min.css';">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" onerror="this.onerror=null;this.href='css/bootstrap-icons.css';">
     <link rel="stylesheet" href="css/style.css">
+    
     <style>
         .floating-editor { position: fixed; display: none; background: #fff; border: 1px solid #ccc; box-shadow: 0 4px 12px rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; z-index: 9999; min-width: 250px; }
         .no-select { user-select: none; }
-        input[list]::-webkit-calendar-picker-indicator { display: block !important; opacity: 1 !important; height: 1.5em; width: 1.5em; cursor: pointer; }
         .table-accounts th { background-color: #f8f9fa; position: sticky; top: 0; z-index: 10; }
         .flow-selector-container { border: 2px solid #0d6efd; border-radius: 5px; padding: 2px; background: white; margin-right: 10px; }
         .flow-selector { border: none; font-weight: bold; color: #0d6efd; outline: none; padding: 2px 5px; }
         .color-picker-wrapper { width: 25px; height: 25px; border-radius: 50%; overflow: hidden; display: inline-block; vertical-align: middle; border: 2px solid #ccc; cursor: pointer; padding: 0; }
         .color-picker-input { width: 150%; height: 150%; margin: -25%; border: none; padding: 0; cursor: pointer; }
-        .progress-cell { height: 6px; background-color: #e9ecef; border-radius: 3px; overflow: hidden; margin-top: 2px; }
-        .progress-bar-custom { height: 100%; background-color: #0d6efd; transition: width 0.3s ease; }
         #configTabsSortable .nav-link { cursor: grab; }
         #configTabsSortable .nav-link:active { cursor: grabbing; }
-
     </style>
 </head>
 <body data-theme="excel" style="visibility: hidden;">
@@ -48,24 +46,20 @@
                 <select id="globalFlowSelector" class="flow-selector" onchange="window.actions.changeGlobalFlow(this.value)"><option value="Contas a Pagar" selected>CONTAS A PAGAR</option><option value="Contas a Receber">CONTAS A RECEBER</option></select>
             </div>
             <div style="width:1px; height:20px; background:rgba(255,255,255,0.3); margin:0 5px;"></div>
+            
             <input type="file" id="fileInput" accept=".csv" hidden onchange="window.actions.iniciarImportacao(this)">
             <button class="btn-tool btn-import-grid" onclick="document.getElementById('fileInput').click()"><i class="bi bi-folder2-open"></i> Importar</button>
             <button class="btn-tool fw-bold text-warning btn-save-grid" onclick="window.actions.salvarManual()"><i class="bi bi-save"></i> Salvar</button>
             <div style="width:1px; height:20px; background:rgba(255,255,255,0.3); margin:0 5px;"></div>
             <button class="btn-tool fw-bold btn-new-grid" onclick="window.actions.abrirModalNovoPai()"><i class="bi bi-plus-circle"></i> Novo</button>
+            
+            <div style="width:1px; height:20px; background:rgba(255,255,255,0.3); margin:0 15px;"></div>
+            
+            <a href="kanban.html" target="_blank" class="btn-tool text-white fw-bold text-decoration-none border-white"><i class="bi bi-kanban"></i> Kanban</a>
+            <a href="gantt.html" target="_blank" class="btn-tool text-white fw-bold text-decoration-none border-white ms-2"><i class="bi bi-bar-chart-steps"></i> Gantt</a>
             <a href="dashboard.html" target="_blank" class="btn-tool text-info fw-bold text-decoration-none border-info ms-2 btn-dashboard-link"><i class="bi bi-pie-chart-fill"></i> Dashboard</a>
-
-
-            <div id="kanbanControls" class="d-none d-flex gap-2 align-items-center border-start ps-2" style="border-color: rgba(255,255,255,0.3) !important;">
-                <select id="kanbanViewMode" class="form-select form-select-sm" style="width: 120px;" onchange="window.actions.refreshKanban()">
-                    <option value="pai">Ver Pais</option>
-                    <option value="filho">Ver Filhos</option>
-                </select>
-                <select id="kanbanParentFilter" class="form-select form-select-sm" style="width: 150px; display:none;" onchange="window.actions.refreshKanban()">
-                    <option value="all">Todos os Pais</option>
-                </select>
-            </div>
         </div>
+        
         <div class="d-flex align-items-center gap-2 ms-auto">
             <button class="btn-tool" onclick="window.actions.abrirConfigStatus()"><i class="bi bi-gear-wide-connected"></i> Configurações</button>
             <select class="tool-select" id="encodingSelector"><option value="UTF-8">UTF-8</option><option value="ISO-8859-1">Latin1</option></select>
@@ -74,25 +68,12 @@
         </div>
     </div>
 
-    <div class="main-content" style="height: calc(100vh - 60px); display: flex; flex-direction: column;">
-        
-        <ul class="nav nav-tabs px-2 pt-2 bg-light border-bottom" id="myTab" role="tablist">
-            <li class="nav-item"><button class="nav-link active fw-bold" id="grid-tab" data-bs-toggle="tab" data-bs-target="#tab-grid"><i class="bi bi-table"></i> Grid</button></li>
-            <li class="nav-item"><button class="nav-link fw-bold" id="kanban-tab" data-bs-toggle="tab" data-bs-target="#tab-kanban"><i class="bi bi-kanban"></i> Kanban</button></li>
-        </ul>
-        
-        <div class="tab-content flex-grow-1" id="myTabContent" style="overflow: hidden; position: relative;">
-            
-            <div class="tab-pane fade show active h-100" id="tab-grid">
-                <div class="spreadsheet-container h-100"><table class="table-excel"><thead id="grid-header"></thead><tbody id="tabela-corpo"></tbody></table></div>
-            </div>
-            
-            <div class="tab-pane fade h-100" id="tab-kanban">
-                <div class="kanban-board p-3 d-flex h-100 gap-3" id="kanban-container"></div>
-            </div>
-            
-
-
+    <div class="main-content" style="height: calc(100vh - 60px);">
+        <div class="spreadsheet-container h-100">
+            <table class="table-excel">
+                <thead id="grid-header"></thead>
+                <tbody id="tabela-corpo"></tbody>
+            </table>
         </div>
     </div>
 
@@ -102,6 +83,7 @@
         
         <ul class="nav nav-tabs mb-3" id="configTabsSortable">
             <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#conf-status">Colunas Kanban</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#conf-gantt">Gantt</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#conf-cards">Campos Card</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#conf-cols">Colunas Grid</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#conf-finance-modes">Modalidades</a></li>
@@ -128,35 +110,41 @@
                 <ul class="list-group" id="statusConfigList" style="max-height: 400px; overflow-y:auto;"></ul>
             </div>
 
-            <div class="tab-pane fade" id="conf-cards"><p class="small text-muted">Selecione quais campos devem aparecer nos cartões do Kanban.</p><div id="kanbanCardConfigList" class="d-flex flex-column gap-2 mb-3"></div><div class="text-end"><button class="btn btn-primary" onclick="window.actions.saveKanbanCardConfig()">Salvar Preferências</button></div></div>
-            <div class="tab-pane fade" id="conf-cols"><p class="small text-muted">Ordem das colunas na tabela.</p><ul class="list-group" id="colConfigList"></ul></div>
-            <div class="tab-pane fade" id="conf-finance-modes"><div class="input-group mb-3"><input type="text" id="newPaymentMode" class="form-control" placeholder="Nova Modalidade"><button class="btn btn-primary" onclick="window.actions.addConfigItem('paymentModes', 'newPaymentMode')">Adicionar</button></div><ul class="list-group" id="listPaymentModes"></ul></div>
-            <div class="tab-pane fade" id="conf-finance-occ"><div class="input-group mb-3"><input type="text" id="newOccurrence" class="form-control" placeholder="Nova Ocorrência"><button class="btn btn-primary" onclick="window.actions.addConfigItem('receivableOccurrences', 'newOccurrence')">Adicionar</button></div><ul class="list-group" id="listOccurrences"></ul></div>
-            <div class="tab-pane fade" id="conf-file-types"><div class="input-group mb-3"><input type="text" id="newFileType" class="form-control" placeholder="Novo Tipo"><button class="btn btn-primary" onclick="window.actions.addConfigItem('fileTypes', 'newFileType')">Adicionar</button></div><ul class="list-group" id="listFileTypes"></ul></div>
-            <div class="tab-pane fade" id="conf-finance-methods"><div class="input-group mb-3"><input type="text" id="newPaymentMethod" class="form-control" placeholder="Novo Método"><button class="btn btn-primary" onclick="window.actions.addConfigItem('paymentMethods', 'newPaymentMethod')">Adicionar</button></div><ul class="list-group" id="listPaymentMethods"></ul></div>
-            <div class="tab-pane fade" id="conf-accounts"><div class="card p-3 mb-3 border-light bg-light"><form id="formAccount" onsubmit="event.preventDefault(); window.actions.saveAccount()"><input type="hidden" id="accId"><div class="row g-2"><div class="col-md-6"><label class="small fw-bold">Nome Oracle</label><input type="text" id="accOracle" class="form-control form-control-sm" required></div><div class="col-md-4"><label class="small fw-bold">Banco</label><input type="text" id="accBank" class="form-control form-control-sm" required></div><div class="col-md-2"><label class="small fw-bold">Nº Banco</label><input type="text" id="accBankNum" class="form-control form-control-sm" required></div><div class="col-md-3"><label class="small fw-bold">Agência</label><input type="text" id="accAgency" class="form-control form-control-sm" required></div><div class="col-md-3"><label class="small fw-bold">Conta</label><input type="text" id="accNum" class="form-control form-control-sm" required></div><div class="col-md-6"><label class="small fw-bold">Pessoa Jurídica</label><input type="text" id="accCompany" class="form-control form-control-sm" required></div><div class="col-12 text-end mt-2"><button type="submit" class="btn btn-success btn-sm fw-bold"><i class="bi bi-check-lg"></i> Salvar</button><button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('formAccount').reset(); document.getElementById('accId').value='';">Limpar</button></div></div></form></div><div class="d-flex justify-content-between align-items-center mb-2"><h6 class="fw-bold mb-0">Contas Cadastradas</h6><div><input type="file" id="csvAccountInput" accept=".csv" hidden onchange="window.actions.preImportAccounts(this)"><button class="btn btn-outline-primary btn-sm" onclick="document.getElementById('csvAccountInput').click()"><i class="bi bi-filetype-csv"></i> Importar CSV</button></div></div><div class="table-responsive border rounded" style="max-height: 400px; overflow-y: auto;"><table class="table table-sm table-hover table-bordered small mb-0 table-accounts"><thead class="table-light"><tr><th>Nome Oracle</th><th>Banco</th><th>Nº</th><th>Ag/Conta</th><th>Empresa</th><th style="width:80px;">Ações</th></tr></thead><tbody id="accountsTableBody"></tbody></table></div></div>
-            <div class="tab-pane fade" id="conf-sla">
-                <div class="card p-3 mb-3 bg-light border">
-                    <label class="small fw-bold mb-2">Adicionar Regra de SLA</label>
-                    <div class="input-group mb-3">
-                        <input type="text" id="newSlaResp" class="form-control" placeholder="Responsável (ex: João)">
-                        <input type="number" id="newSlaDays" class="form-control" placeholder="Dias (ex: 2)">
-                        <button class="btn btn-primary" onclick="window.actions.addSlaRule()">Adicionar</button>
+            <div class="tab-pane fade" id="conf-gantt">
+                <div class="card p-4 border-light bg-light">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-magic"></i> Previsão Automática</h6>
+                    <div class="row align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Dias para previsão</label>
+                            <div class="input-group">
+                                <input type="number" id="ganttAutoDaysInput" class="form-control" min="1" value="5">
+                                <span class="input-group-text">dias</span>
+                            </div>
+                        </div>
+                        <div class="col-md-8"><p class="small text-muted mb-2">Soma à Data de Tramitação se não houver previsão.</p></div>
+                        <div class="col-12 mt-3 text-end"><button class="btn btn-success fw-bold" onclick="window.actions.saveGanttConfig()">Salvar</button></div>
                     </div>
                 </div>
-                <h6 class="small fw-bold">Regras Atuais</h6>
-                <ul class="list-group" id="slaList"></ul>
             </div>
-            <div class="tab-pane fade" id="conf-users"><div class="card p-3 mb-3 bg-light border"><h6 class="fw-bold">Novo / Editar Usuário</h6><input type="hidden" id="editUserId"><div class="row g-2 mb-2"><div class="col-md-6"><label class="small">Usuário</label><input type="text" id="userInputName" class="form-control form-control-sm"></div><div class="col-md-6"><label class="small">Senha</label><input type="password" id="userInputPass" class="form-control form-control-sm" placeholder="(Deixe vazio para manter)"></div></div><label class="small fw-bold mt-2">Permissões</label><div class="row g-2 mb-3"><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_grid_view"><label class="form-check-label small" for="perm_grid_view">Ver Grid</label></div></div><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_grid_edit"><label class="form-check-label small" for="perm_grid_edit">Editar Grid</label></div></div><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_kanban_view"><label class="form-check-label small" for="perm_kanban_view">Ver Kanban</label></div></div><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_kanban_edit"><label class="form-check-label small" for="perm_kanban_edit">Editar Kanban</label></div></div><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_dash_view"><label class="form-check-label small" for="perm_dash_view">Ver Dash</label></div></div><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_dash_edit"><label class="form-check-label small" for="perm_dash_edit">Editar Dash</label></div></div><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_admin"><label class="form-check-label small text-danger fw-bold" for="perm_admin">ADMIN</label></div></div></div><button class="btn btn-sm btn-success w-100" onclick="window.actions.saveUser()">Salvar Usuário</button></div><ul class="list-group" id="usersList"></ul></div>
-            <div class="tab-pane fade" id="conf-maintenance"><div class="alert alert-danger d-flex align-items-center" role="alert"><i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i><div><strong>Atenção!</strong> Esta ação é irreversível. Todos os dados de chamados serão apagados.</div></div><div class="text-end"><button class="btn btn-danger fw-bold" onclick="window.actions.clearAllTickets()"><i class="bi bi-trash3-fill"></i> ZERAR TABELA DE REGISTROS</button></div></div>
+
+            <div class="tab-pane fade" id="conf-cards"><div id="kanbanCardConfigList" class="d-flex flex-column gap-2 mb-3"></div><div class="text-end"><button class="btn btn-primary" onclick="window.actions.saveKanbanCardConfig()">Salvar</button></div></div>
+            <div class="tab-pane fade" id="conf-cols"><ul class="list-group" id="colConfigList"></ul></div>
+            <div class="tab-pane fade" id="conf-finance-modes"><div class="input-group mb-3"><input type="text" id="newPaymentMode" class="form-control" placeholder="Nova Modalidade"><button class="btn btn-primary" onclick="window.actions.addConfigItem('paymentModes', 'newPaymentMode')">Add</button></div><ul class="list-group" id="listPaymentModes"></ul></div>
+            <div class="tab-pane fade" id="conf-finance-occ"><div class="input-group mb-3"><input type="text" id="newOccurrence" class="form-control" placeholder="Nova Ocorrência"><button class="btn btn-primary" onclick="window.actions.addConfigItem('receivableOccurrences', 'newOccurrence')">Add</button></div><ul class="list-group" id="listOccurrences"></ul></div>
+            <div class="tab-pane fade" id="conf-file-types"><div class="input-group mb-3"><input type="text" id="newFileType" class="form-control" placeholder="Novo Tipo"><button class="btn btn-primary" onclick="window.actions.addConfigItem('fileTypes', 'newFileType')">Add</button></div><ul class="list-group" id="listFileTypes"></ul></div>
+            <div class="tab-pane fade" id="conf-finance-methods"><div class="input-group mb-3"><input type="text" id="newPaymentMethod" class="form-control" placeholder="Novo Método"><button class="btn btn-primary" onclick="window.actions.addConfigItem('paymentMethods', 'newPaymentMethod')">Add</button></div><ul class="list-group" id="listPaymentMethods"></ul></div>
+            <div class="tab-pane fade" id="conf-accounts"><div class="card p-3 mb-3 border-light bg-light"><form id="formAccount" onsubmit="event.preventDefault(); window.actions.saveAccount()"><input type="hidden" id="accId"><div class="row g-2"><div class="col-md-6"><label class="small fw-bold">Nome Oracle</label><input type="text" id="accOracle" class="form-control form-control-sm" required></div><div class="col-md-4"><label class="small fw-bold">Banco</label><input type="text" id="accBank" class="form-control form-control-sm" required></div><div class="col-md-2"><label class="small fw-bold">Nº Banco</label><input type="text" id="accBankNum" class="form-control form-control-sm" required></div><div class="col-md-3"><label class="small fw-bold">Agência</label><input type="text" id="accAgency" class="form-control form-control-sm" required></div><div class="col-md-3"><label class="small fw-bold">Conta</label><input type="text" id="accNum" class="form-control form-control-sm" required></div><div class="col-md-6"><label class="small fw-bold">Pessoa Jurídica</label><input type="text" id="accCompany" class="form-control form-control-sm" required></div><div class="col-12 text-end mt-2"><button type="submit" class="btn btn-success btn-sm fw-bold">Salvar</button><button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('formAccount').reset(); document.getElementById('accId').value='';">Limpar</button></div></div></form></div><div class="d-flex justify-content-between align-items-center mb-2"><h6 class="fw-bold mb-0">Contas</h6><div><input type="file" id="csvAccountInput" accept=".csv" hidden onchange="window.actions.preImportAccounts(this)"><button class="btn btn-outline-primary btn-sm" onclick="document.getElementById('csvAccountInput').click()">Importar CSV</button></div></div><div class="table-responsive border rounded" style="max-height: 400px; overflow-y: auto;"><table class="table table-sm table-hover table-bordered small mb-0 table-accounts"><thead class="table-light"><tr><th>Nome Oracle</th><th>Banco</th><th>Nº</th><th>Ag/Conta</th><th>Empresa</th><th style="width:80px;">Ações</th></tr></thead><tbody id="accountsTableBody"></tbody></table></div></div>
+            <div class="tab-pane fade" id="conf-sla"><div class="card p-3 mb-3 bg-light border"><label class="small fw-bold mb-2">Adicionar Regra</label><div class="input-group mb-3"><input type="text" id="newSlaResp" class="form-control" placeholder="Responsável"><input type="number" id="newSlaDays" class="form-control" placeholder="Dias"><button class="btn btn-primary" onclick="window.actions.addSlaRule()">Add</button></div></div><ul class="list-group" id="slaList"></ul></div>
+            <div class="tab-pane fade" id="conf-users"><div class="card p-3 mb-3 bg-light border"><h6 class="fw-bold">Novo / Editar</h6><input type="hidden" id="editUserId"><div class="row g-2 mb-2"><div class="col-md-6"><label class="small">Usuário</label><input type="text" id="userInputName" class="form-control form-control-sm"></div><div class="col-md-6"><label class="small">Senha</label><input type="password" id="userInputPass" class="form-control form-control-sm"></div></div><label class="small fw-bold mt-2">Permissões</label><div class="row g-2 mb-3"><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_grid_view"><label class="form-check-label small" for="perm_grid_view">Ver Grid</label></div></div><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_grid_edit"><label class="form-check-label small" for="perm_grid_edit">Edt Grid</label></div></div><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_kanban_view"><label class="form-check-label small" for="perm_kanban_view">Ver Kbn</label></div></div><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_kanban_edit"><label class="form-check-label small" for="perm_kanban_edit">Edt Kbn</label></div></div><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_dash_view"><label class="form-check-label small" for="perm_dash_view">Ver Dsh</label></div></div><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_dash_edit"><label class="form-check-label small" for="perm_dash_edit">Edt Dsh</label></div></div><div class="col-3"><div class="form-check"><input type="checkbox" class="form-check-input perm-check" id="perm_admin"><label class="form-check-label small text-danger fw-bold" for="perm_admin">ADMIN</label></div></div></div><button class="btn btn-sm btn-success w-100" onclick="window.actions.saveUser()">Salvar</button></div><ul class="list-group" id="usersList"></ul></div>
+            <div class="tab-pane fade" id="conf-maintenance"><div class="alert alert-danger" role="alert"><strong>Atenção!</strong> Ação irreversível.</div><div class="text-end"><button class="btn btn-danger fw-bold" onclick="window.actions.clearAllTickets()">ZERAR REGISTROS</button></div></div>
         </div>
     </div><div class="modal-footer py-1"><button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button></div></div></div></div>
 
-    <div class="modal fade" id="modalAccountImportOptions" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title fw-bold">Opções de Importação</h5></div><div class="modal-body text-center"><p class="mb-4">Como deseja importar as novas contas?</p><div class="d-grid gap-2"><button class="btn btn-danger py-2 fw-bold" onclick="window.actions.confirmImportAccounts('clear')"><i class="bi bi-trash"></i> ZERAR TUDO E IMPORTAR</button><button class="btn btn-success py-2 fw-bold" onclick="window.actions.confirmImportAccounts('append')"><i class="bi bi-plus-circle"></i> ADICIONAR AOS EXISTENTES</button><button class="btn btn-secondary py-2" data-bs-dismiss="modal" onclick="window.actions.cancelImportAccounts()">Cancelar</button></div></div></div></div></div>
-    <div class="modal fade" id="modalImportConfirm" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-warning-subtle"><h5 class="modal-title fw-bold">⚠️ Dados Encontrados</h5></div><div class="modal-body text-center"><p class="fs-5">O arquivo CSV foi lido com sucesso.</p><div class="d-grid gap-2"><button class="btn btn-danger py-2" onclick="window.actions.executarImportacao('overwrite')">APAGAR TUDO e Inserir Novos</button><button class="btn btn-primary py-2" onclick="window.actions.executarImportacao('append')">MANTER e Adicionar Novos</button><button class="btn btn-secondary py-2" data-bs-dismiss="modal">Cancelar</button></div></div></div></div></div>
+    <div class="modal fade" id="modalAccountImportOptions" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title fw-bold">Importar Contas</h5></div><div class="modal-body text-center"><div class="d-grid gap-2"><button class="btn btn-danger py-2 fw-bold" onclick="window.actions.confirmImportAccounts('clear')">ZERAR E IMPORTAR</button><button class="btn btn-success py-2 fw-bold" onclick="window.actions.confirmImportAccounts('append')">ADICIONAR</button><button class="btn btn-secondary py-2" data-bs-dismiss="modal" onclick="window.actions.cancelImportAccounts()">Cancelar</button></div></div></div></div></div>
+    <div class="modal fade" id="modalImportConfirm" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-warning-subtle"><h5 class="modal-title fw-bold">Dados Encontrados</h5></div><div class="modal-body text-center"><div class="d-grid gap-2"><button class="btn btn-danger py-2" onclick="window.actions.executarImportacao('overwrite')">APAGAR TUDO e Inserir</button><button class="btn btn-primary py-2" onclick="window.actions.executarImportacao('append')">ADICIONAR</button><button class="btn btn-secondary py-2" data-bs-dismiss="modal">Cancelar</button></div></div></div></div></div>
 
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" onerror="this.onerror=null;this.src='js/bootstrap.bundle.min.js';"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js" onerror="this.onerror=null;this.src='js/Sortable.min.js';"></script>
     <script type="module" src="js/main.js"></script>
 </body>
 </html>

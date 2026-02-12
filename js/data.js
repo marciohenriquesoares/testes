@@ -4,7 +4,8 @@ export const DataManager = {
     // Banco de Dados Local
     db: [],
     
-    strictBankValidation: true, 
+    strictBankValidation: true,
+    ganttAutoDays: 5, // <--- NOVO PADRÃO (5 dias se não configurado)
 
     // LISTAS PADRÃO
     paymentModes: ['PIX', 'CONTA CORRENTE', 'ALELO'],
@@ -38,8 +39,6 @@ export const DataManager = {
     statusConfig: [{name:'Previsto',bg:'#f8f9fa'},{name:'Em Andamento',bg:'#cfe2ff'},{name:'Concluído',bg:'#d1e7dd'}],
     slaConfig: {}, 
     kanbanCardFields: { empresa:true, status:true },
-    
-    // NOVA PROPRIEDADE: Ordem das abas de configuração
     configTabOrder: null, 
 
     async load() {
@@ -48,60 +47,93 @@ export const DataManager = {
             const json = await response.json();
             if (json.status === 'success') {
                 this.db = json.db || [];
+                
                 if (json.configs) {
                     if (json.configs.status_config) this.statusConfig = json.configs.status_config;
                     if (json.configs.column_order) this.columnOrder = json.configs.column_order;
                     if (json.configs.sla_config) this.slaConfig = json.configs.sla_config;
                     if (json.configs.kanban_card_fields) this.kanbanCardFields = json.configs.kanban_card_fields;
                     if (json.configs.strict_bank_validation !== undefined) this.strictBankValidation = json.configs.strict_bank_validation;
-                    
                     if (json.configs.payment_modes) this.paymentModes = json.configs.payment_modes;
                     if (json.configs.receivable_occurrences) this.receivableOccurrences = json.configs.receivable_occurrences;
                     if (json.configs.file_types) this.fileTypes = json.configs.file_types;
                     if (json.configs.payment_methods) this.paymentMethods = json.configs.payment_methods;
-                    
-                    // Carrega a ordem das abas
                     if (json.configs.config_tab_order) this.configTabOrder = json.configs.config_tab_order;
+                    // Carrega configuração do Gantt
+                    if (json.configs.gantt_auto_days) this.ganttAutoDays = parseInt(json.configs.gantt_auto_days);
                 }
+            } else {
+                console.error("Erro API:", json.message);
             }
-        } catch (error) { console.error("Erro load:", error); }
+        } catch (error) { console.error("Erro Fatal Load:", error); }
     },
 
-    async save() { await fetch('api.php?action=save_data', { method:'POST', body:JSON.stringify(this.db) }); },
-    async saveConfig(key, value) { await fetch('api.php?action=save_config', { method:'POST', body:JSON.stringify({key, value}) }); },
+    async save() { 
+        try {
+            const response = await fetch('api.php?action=save_data', { 
+                method:'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body:JSON.stringify(this.db) 
+            });
+            const res = await response.json();
+            if(res.status !== 'success') console.error('Erro ao salvar:', res.message);
+        } catch(e) {
+            console.error('Erro conexão save:', e);
+        }
+    },
 
+    async saveConfig(key, value) { 
+        await fetch('api.php?action=save_config', { 
+            method:'POST', 
+            body:JSON.stringify({key, value}) 
+        }); 
+    },
+
+    // ... (Mantém parseCSVForImport e confirmImport iguais) ...
     parseCSVForImport(csvText) {
         const lines = csvText.split(/\r\n|\n/).filter(line => line.trim() !== '');
         if (lines.length < 2) return 0;
         const newItems = [];
-        let maxId = 0;
-        this.db.forEach(i => { const v = parseInt(i.id); if(!isNaN(v) && v > maxId) maxId = v; });
+        let tempIdCounter = Date.now();
+
         for (let i = 1; i < lines.length; i++) {
             const cols = lines[i].split(';');
-            maxId++;
+            tempIdCounter++;
             const item = {
-                id: maxId.toString(),
+                id: tempIdCounter.toString(),
                 empresa: cols[1]||'', banco: cols[2]||'', num_banco: cols[3]||'', agencia: cols[4]||'', conta: cols[5]||'',
                 modalidade: cols[6]||'', ocorrencia: cols[7]||'', 
                 cod: cols[8]||'', tipo_arq: cols[9]||'REMESSA', 
                 metodo: cols[10]||'ELETRONICO', 
                 topico: cols[11]||'',
-                prioridade: 'Média', dt_tramitacao: new Date().toISOString().split('T')[0], status: 'Previsto',
+                prioridade: 'Média', 
+                dt_tramitacao: new Date().toISOString().split('T')[0], 
+                status: 'Previsto',
                 dt_prevista: '',
-                children: [], expanded: false, styles: {}
+                children: [], 
+                expanded: false, 
+                styles: {}
             };
             newItems.push(item);
         }
         if (newItems.length > 0) { this.tempImportData = newItems; return newItems.length; }
         return 0;
     },
+
     confirmImport(mode) {
         if (!this.tempImportData) return;
         const flow = document.getElementById('globalFlowSelector')?.value || 'Contas a Pagar';
         this.tempImportData.forEach(i => i.tipo_fluxo = flow);
+        
         if (mode === 'overwrite') this.db = this.tempImportData;
         else this.db = [...this.db, ...this.tempImportData];
+        
         this.tempImportData = null; 
-        this.save(); 
+        this.save().then(() => {
+            this.load().then(() => {
+                if(window.actions && window.actions.render) window.actions.render();
+                else window.location.reload();
+            });
+        }); 
     }
 };

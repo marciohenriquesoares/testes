@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban - Controle Financeiro</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" onerror="this.onerror=null;this.href='css/bootstrap.min.css';">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" onerror="this.onerror=null;this.href='css/bootstrap-icons.css';">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-theme="excel" style="visibility: hidden; background: #e9ecef;">
+
+    <div id="loadingOverlay"><div class="spinner-border mb-2"></div><div>Carregando...</div></div>
+
+    <div class="toolbar" style="height: 50px; padding: 0 15px; display: flex; align-items: center; justify-content: space-between;">
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="m-0 text-white fw-bold me-3"><i class="bi bi-kanban"></i> Kanban</h5>
+            
+            <select id="globalFlowSelector" class="form-select form-select-sm fw-bold text-primary" style="width: 200px;" onchange="window.actions.changeGlobalFlow(this.value)">
+                <option value="Contas a Pagar" selected>CONTAS A PAGAR</option>
+                <option value="Contas a Receber">CONTAS A RECEBER</option>
+            </select>
+
+            <div style="width:1px; height:20px; background:rgba(255,255,255,0.3); margin:0 10px;"></div>
+
+            <select id="kanbanViewMode" class="form-select form-select-sm" style="width: 120px;" onchange="window.actions.refreshKanban()">
+                <option value="pai">Ver Pais</option>
+                <option value="filho">Ver Filhos</option>
+            </select>
+            <select id="kanbanParentFilter" class="form-select form-select-sm" style="width: 200px; display:none;" onchange="window.actions.refreshKanban()">
+                <option value="all">Todos os Pais</option>
+            </select>
+            
+            <button class="btn btn-sm btn-outline-light ms-2" onclick="window.location.reload()"><i class="bi bi-arrow-clockwise"></i> Atualizar</button>
+        </div>
+
+        <div>
+            <select class="tool-select" onchange="window.actions.mudarTema(this.value)" id="themeSelector"><option value="excel">🎨 Excel</option><option value="light">☀️ Light</option><option value="dark">🌙 Dark</option></select>
+            <button class="btn btn-sm btn-outline-light ms-2" onclick="window.close()">Fechar</button>
+        </div>
+    </div>
+
+    <div class="main-content" style="height: calc(100vh - 50px);">
+        <div class="kanban-board p-3 d-flex h-100 gap-3" id="kanban-container">
+            </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" onerror="this.onerror=null;this.src='js/bootstrap.bundle.min.js';"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js" onerror="this.onerror=null;this.src='js/Sortable.min.js';"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

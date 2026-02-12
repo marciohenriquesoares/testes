@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gantt - Cronograma</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" onerror="this.onerror=null;this.href='css/bootstrap.min.css';">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" onerror="this.onerror=null;this.href='css/bootstrap-icons.css';">
+    <link href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css" rel="stylesheet" onerror="this.onerror=null;this.href='css/frappe-gantt.css';">
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        .gantt-container { overflow-x: auto; padding-bottom: 50px; background: #fff; height: 100%; transition: background 0.3s; position: relative; }
+        #gantt { width: 100%; min-height: 100%; display: block; }
+        .gantt .bar-progress { fill: rgba(0,0,0,0.2) !important; } 
+        .gantt .bar-label { fill: #333; font-weight: bold; font-size: 12px; }
+        .gantt-icon { font-weight: normal; margin-right: 5px; }
+
+        [data-theme="dark"] .gantt-container { background: #212529; }
+        [data-theme="dark"] .gantt .grid-background { fill: #212529; }
+        [data-theme="dark"] .gantt .grid-header { fill: #2b3035; stroke: #495057; }
+        [data-theme="dark"] .gantt .grid-row { fill: #212529; stroke: #343a40; }
+        [data-theme="dark"] .gantt .row-line { stroke: #343a40; }
+        [data-theme="dark"] .gantt .tick line { stroke: #343a40; }
+        [data-theme="dark"] .gantt .tick text { fill: #adb5bd; }
+        [data-theme="dark"] .gantt .upper-text, [data-theme="dark"] .gantt .lower-text { fill: #ffffff !important; }
+        [data-theme="dark"] .gantt .bar-label { fill: #fff; }
+        [data-theme="dark"] .gantt .bar-wrapper:hover .bar-label { fill: #fff; }
+        [data-theme="dark"] .gantt .today-highlight { fill: rgba(255, 255, 255, 0.05); }
+
+        .floating-editor { position: fixed; display: none; background: #fff; border: 1px solid #ccc; box-shadow: 0 4px 15px rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; z-index: 9999; width: 280px; }
+        [data-theme="dark"] .floating-editor { background: #343a40; border-color: #495057; color: #fff; }
+    </style>
+</head>
+<body data-theme="excel" style="visibility: hidden;">
+
+    <div id="loadingOverlay"><div class="spinner-border mb-2"></div><div>Carregando...</div></div>
+
+    <div id="ganttBarEditor" class="floating-editor">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold m-0"><i class="bi bi-sliders"></i> Editar Barra</h6>
+            <button class="btn btn-sm btn-link text-danger p-0" onclick="document.getElementById('ganttBarEditor').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <hr class="my-2">
+        <div class="mb-2"><label class="small fw-bold mb-1">Cor</label><input type="color" id="ganttBarColor" class="form-control form-control-color w-100" value="#a3a3ff"></div>
+        <div class="mb-3"><label class="small fw-bold mb-1">Progresso (%)</label><input type="number" id="ganttBarProgress" class="form-control form-control-sm" min="0" max="100"></div>
+        <div class="d-grid gap-1">
+            <button class="btn btn-sm btn-success fw-bold" onclick="window.actions.saveGanttStyle()">Salvar</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="window.actions.resetGanttColor()">Cor Padrão</button>
+        </div>
+    </div>
+
+    <div class="toolbar" style="height: 50px; padding: 0 15px; display: flex; align-items: center; justify-content: space-between;">
+        <div class="d-flex align-items-center gap-2">
+            <h5 class="m-0 text-white fw-bold me-3"><i class="bi bi-bar-chart-steps"></i> Cronograma</h5>
+            <select id="globalFlowSelector" class="form-select form-select-sm fw-bold text-primary" style="width: 200px;" onchange="window.actions.changeGlobalFlow(this.value)">
+                <option value="Contas a Pagar" selected>CONTAS A PAGAR</option>
+                <option value="Contas a Receber">CONTAS A RECEBER</option>
+            </select>
+            <div style="width:1px; height:20px; background:rgba(255,255,255,0.3); margin:0 10px;"></div>
+            <span class="text-white small me-1">Visão:</span>
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-light text-primary fw-bold" onclick="window.actions.changeGanttView('Day')">Dia</button>
+                <button type="button" class="btn btn-light text-primary fw-bold" onclick="window.actions.changeGanttView('Week')">Semana</button>
+                <button type="button" class="btn btn-light text-primary fw-bold" onclick="window.actions.changeGanttView('Month')">Mês</button>
+            </div>
+            <button class="btn btn-sm btn-outline-light ms-2" onclick="window.location.reload()"><i class="bi bi-arrow-clockwise"></i> Atualizar</button>
+        </div>
+        <div>
+            <select class="tool-select" onchange="window.actions.mudarTema(this.value)" id="themeSelector"><option value="excel">🎨 Excel</option><option value="light">☀️ Light</option><option value="dark">🌙 Dark</option></select>
+            <button class="btn btn-sm btn-outline-light ms-2" onclick="window.close()">Fechar</button>
+        </div>
+    </div>
+
+    <div class="main-content" style="height: calc(100vh - 50px);">
+        <div class="gantt-container h-100 w-100 p-3">
+            <svg id="gantt"></svg>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" onerror="this.onerror=null;this.src='js/bootstrap.bundle.min.js';"></script>
+    <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js" onerror="this.onerror=null;this.src='js/frappe-gantt.min.js';"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
